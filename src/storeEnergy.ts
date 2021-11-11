@@ -26,27 +26,10 @@ export function storeEnergy(creep: Creep) {
         store = Game.getObjectById(memory.store.target) as StructureContainer | StructureExtension | StructureFactory | StructureSpawn;
     }
 
-
     if (!store || (!(store instanceof RoomPosition) && store.store && store.store.getFreeCapacity(RESOURCE_ENERGY) === 0)) {
         const sites: (StructureController | ConstructionSite)[] = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
-        sites.sort((a, b) => ((a instanceof ConstructionSite) ? getConstructionScore(creep, a) : getControllerScore(creep, a)) - ((b instanceof ConstructionSite) ? getConstructionScore(creep, b) : getControllerScore(creep, b)));
-        console.log("Site score: " + getConstructionScore(creep, sites[0] as ConstructionSite));
-
         sites.push(targetController(creep));
-        console.log("Control score: " + getControllerScore(creep, targetController(creep)));
-
         sites.sort((a, b) => ((a instanceof ConstructionSite) ? getConstructionScore(creep, a) : getControllerScore(creep, a)) - ((b instanceof ConstructionSite) ? getConstructionScore(creep, b) : getControllerScore(creep, b)));
-
-
-        // if (sites && sites.length !== 0) {
-        //     sites.sort((a, b) => getConstructionScore(creep, a) - getConstructionScore(creep, b));
-        //     store = sites[0];
-        // } else {
-        //     store = targetController(creep);
-        //     if (!store)
-        //         store = creep.pos.findClosestByPath(FIND_EXIT) ?? creep.pos;
-        // }
-        // console.log("Site score: " + getConstructionScore(creep, sites[0]) + " controller score: " + getControllerScore(creep, targetController(creep)));
         store = sites[0];
         memory.store = { target: (store instanceof RoomPosition) ? store.x + "," + store.y + "," + store.roomName : store.id };
     }
@@ -92,7 +75,7 @@ export function storeEnergy(creep: Creep) {
 export function getContainerScore(creep: Creep, container: StructureContainer | StructureExtension | StructureFactory | StructureSpawn): number {
     let score = 0;
 
-    score -= (container.store.getUsedCapacity(RESOURCE_ENERGY) / container.store.getCapacity(RESOURCE_ENERGY)) * 10;
+    score += (container.store.getUsedCapacity(RESOURCE_ENERGY) / container.store.getCapacity(RESOURCE_ENERGY)) * 30;
     const path = PathFinder.search(creep.pos, { pos: container.pos, range: 1 });
     score += path.cost;
     return score;
@@ -100,8 +83,8 @@ export function getContainerScore(creep: Creep, container: StructureContainer | 
 
 export function getConstructionScore(creep: Creep, site: ConstructionSite): number {
     let score = 0;
-    score -= (site.progress / site.progressTotal) * 10;
-    score += site.progressTotal;
+    score -= (site.progress / site.progressTotal) * 100;
+    score += site.progressTotal / 250;
     const path = PathFinder.search(creep.pos, { pos: site.pos, range: 1 });
     score += path.cost;
     return score;
@@ -110,8 +93,8 @@ export function getConstructionScore(creep: Creep, site: ConstructionSite): numb
 export function getControllerScore(creep: Creep, controller: StructureController) {
     let score = 0;
     const path = PathFinder.search(creep.pos, { pos: controller.pos, range: 1 });
-    score += (controller.level / 8) * 10;
-    score += controller.ticksToDowngrade / 40;
+    score += controller.level * 10;
+    score += controller.ticksToDowngrade / 100000;
     score += path.cost;
     return score;
 }

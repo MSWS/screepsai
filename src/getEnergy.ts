@@ -1,3 +1,4 @@
+import { buildRoad } from "buildRoad";
 import { Reason, TaskResult } from "./Task";
 
 export function getEnergy(creep: Creep): TaskResult {
@@ -31,6 +32,9 @@ export function getEnergy(creep: Creep): TaskResult {
 
     if (!source)
         return new TaskResult(false, Reason.INVALID_TARGET);
+    if (creep.room.controller)
+        buildRoad(source.pos, creep.room.controller.pos);
+
     switch (creep.harvest(source)) {
         case OK:
             if (creep.store.getFreeCapacity() === 0) {
@@ -53,7 +57,7 @@ export function getEnergy(creep: Creep): TaskResult {
 export function getSourceScore(creep: Creep, source: Source): number {
     let score = 0;
     for (const creep of source.pos.findInRange(FIND_MY_CREEPS, 1)) {
-        score += creep.store.getFreeCapacity() - creep.store.energy;
+        score += (creep.store.getCapacity() - creep.store.energy) / 2;
     }
     const path = PathFinder.search(creep.pos, { pos: source.pos, range: 1 });
     score += path.cost;

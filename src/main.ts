@@ -1,8 +1,11 @@
+import { buildRoad } from "buildRoad";
 import { claim } from "claim";
 import "./harvest";
 import { harvest } from "./harvest";
 
 const knownRooms: string[] = [];
+
+const link = [FIND_SOURCES, FIND_MY_STRUCTURES, FIND_MY_SPAWNS];
 
 module.exports.loop = function () {
     for (const name in Game.creeps) {
@@ -21,16 +24,52 @@ module.exports.loop = function () {
         }
     }
 
+    for (const name in Game.rooms) {
+        if (knownRooms.includes(name))
+            continue;
+        const room = Game.rooms[name];
+        if (room.controller && !room.controller.my)
+            continue;
+        for (const source of link) {
+            for (const target of link) {
+                if (target === source)
+                    continue;
+                for (const s of room.find(source)) {
+                    for (const t of room.find(target)) {
+                        buildRoad(s instanceof RoomPosition ? s : s.pos, t instanceof RoomPosition ? t : t.pos);
+                    }
+                }
+            }
+        }
+        knownRooms.push(name);
+    }
+
     for (const name in Game.spawns) {
         const spawn = Game.spawns[name];
-        if (spawn.room.find(FIND_MY_CREEPS).length >= spawn.room.find(FIND_SOURCES).length * 3 + 1)
+
+        let energyAvail = spawn.room.energyAvailable;
+        if (energyAvail / spawn.room.energyCapacityAvailable < .9)
             continue;
-        const energyAvail = spawn.room.energyAvailable;
-        const addOn = [CLAIM, MOVE, WORK, CARRY, MOVE, MOVE];
+        const addOn = [CLAIM, CARRY, WORK, MOVE, CARRY, MOVE, ATTACK];
         const body: BodyPartConstant[] = [WORK, MOVE, CARRY];
-        for (let i = 300; i < energyAvail && (i - 300) / 100 < addOn.length; i += 100) {
-            body.push(addOn[(i - 300) / 100]);
+        for (const part of body)
+            energyAvail -= BODYPART_COST[part];
+        for (let i = 0; i < addOn.length && energyAvail > 0; i++) {
+            if (energyAvail < BODYPART_COST[addOn[i]])
+                continue;
+            body.push(addOn[i]);
+            energyAvail -= BODYPART_COST[addOn[i]];
         }
+
+        const creeps = spawn.room.find(FIND_MY_CREEPS);
+        creeps.sort((a, b) => getCreepScore(spawn, a) - getCreepScore(spawn, b));
+        const weakest = creeps[creeps.length - 1];
+        if (creeps.length >= spawn.room.find(FIND_SOURCES).length * 3 + 1)
+            if (getTheoreticalScore(body) < getCreepScore(spawn, weakest)) {
+                weakest.say("RIP");
+                (weakest.memory as any).sacrifice = spawn.id;
+                continue;
+            }
         spawn.spawnCreep(body, "Minion" + Math.round(Math.random() * 10000));
     }
 
@@ -44,4 +83,30 @@ function getBestRole(creep: Creep) {
     if (creep.getActiveBodyparts(CLAIM) && creep.getActiveBodyparts(MOVE) && creep.getActiveBodyparts(WORK))
         return "claimer";
     return "harvester";
+}
+
+function getCreepScore(spawn: StructureSpawn, creep: Creep) {
+    let result = 0;
+    for (const body of creep.body) {
+        result -= BODYPART_COST[body.type];
+    }
+
+    result -= creep.store.getCapacity();
+
+    if (creep.room.controller) {
+        const cost = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).cost;
+        result += cost;
+    }
+
+    result -= (creep.ticksToLive ?? CREEP_LIFE_TIME) / CREEP_LIFE_TIME * 40;
+    return result;
+}
+
+function getTheoreticalScore(body: BodyPartConstant[]) {
+    let result = 0;
+    for (const b of body) {
+        result -= BODYPART_COST[b];
+    }
+    result -= 20;
+    return result;
 }

@@ -36,6 +36,9 @@ export function takeoverRoom(creep: Creep, controller: StructureController): Tas
                 creep.reserveController(controller);
                 return new TaskResult(true, Reason.COMPLETED);
         }
+    } else {
+        if (creep.attackController(controller) === ERR_NOT_IN_RANGE)
+            creep.moveTo(controller);
     }
     return new TaskResult(false, Reason.NONE);
 }
