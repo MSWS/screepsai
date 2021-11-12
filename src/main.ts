@@ -1,5 +1,7 @@
+import { build } from "build";
 import { buildRoad } from "buildRoad";
 import { claim } from "claim";
+import { sacrifice } from "sacrifice";
 import "./harvest";
 import { harvest } from "./harvest";
 
@@ -11,12 +13,19 @@ module.exports.loop = function () {
     for (const name in Game.creeps) {
         const creep = Game.creeps[name];
         const memory = creep.memory as any;
+        if (memory.sacrifice) {
+            sacrifice(creep);
+            continue;
+        }
         switch (memory.role) {
             case "harvester":
                 harvest(creep);
                 continue;
             case "claimer":
                 claim(creep);
+                continue;
+            case "builder":
+                build(creep);
                 continue;
             default:
                 memory.role = getBestRole(creep);
@@ -26,9 +35,10 @@ module.exports.loop = function () {
 
     for (const name in Game.spawns) {
         const spawn = Game.spawns[name];
+        const creeps = spawn.room.find(FIND_MY_CREEPS);
 
         let energyAvail = spawn.room.energyAvailable;
-        if (energyAvail / spawn.room.energyCapacityAvailable < .9)
+        if (energyAvail / spawn.room.energyCapacityAvailable < creeps.length / (spawn.room.find(FIND_SOURCES).length * 3 + 1))
             continue;
         const addOn = [CLAIM, WORK, CARRY, MOVE, CARRY, MOVE, ATTACK];
         const body: BodyPartConstant[] = [WORK, MOVE, CARRY];
@@ -41,7 +51,6 @@ module.exports.loop = function () {
             energyAvail -= BODYPART_COST[addOn[i]];
         }
 
-        const creeps = spawn.room.find(FIND_MY_CREEPS);
         if (creeps.length >= spawn.room.find(FIND_SOURCES).length * 3 + 1) {
             creeps.sort((a, b) => getCreepScore(spawn, a) - getCreepScore(spawn, b));
             const weakest = creeps[creeps.length - 1];
@@ -65,7 +74,8 @@ module.exports.loop = function () {
 function getBestRole(creep: Creep) {
     if (creep.getActiveBodyparts(CLAIM) && creep.getActiveBodyparts(MOVE) && creep.getActiveBodyparts(WORK))
         return "claimer";
-    return "harvester";
+
+    return Math.random() > .5 ? "builder" : "harvester";
 }
 
 function getCreepScore(spawn: StructureSpawn, creep: Creep) {

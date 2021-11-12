@@ -20,6 +20,7 @@ export function getEnergy(creep: Creep): TaskResult {
 
     source = Game.getObjectById(memory.getenergy.target) as Source | Mineral<MineralConstant> | Deposit;
     if (isSourceBlocked(source.pos) && !creep.pos.isNearTo(source.pos)) {
+        creep.say("Blocked");
         target = undefined;
         let possible = creep.room.find(FIND_SOURCES_ACTIVE);
         possible = possible.filter(s => s.id !== source.id);
@@ -56,12 +57,12 @@ export function getEnergy(creep: Creep): TaskResult {
 export function getSourceScore(creep: Creep, source: Source): number {
     let score = 0;
     for (const creep of source.pos.findInRange(FIND_MY_CREEPS, 1)) {
-        score += (creep.store.getCapacity() - creep.store.energy) / 2;
+        score += (creep.store.getCapacity() - creep.store.energy) / 5;
     }
     const path = PathFinder.search(creep.pos, { pos: source.pos, range: 1 });
     score += path.cost;
-    if (path.incomplete || isSourceBlocked(source.pos))
-        score += 100;
+    // if (path.incomplete || isSourceBlocked(source.pos))
+    //     score += 100;
     return score;
 }
 
@@ -85,5 +86,7 @@ export function isSourceBlocked(pos: RoomPosition): boolean {
             // new RoomPosition(x, y, pos.roomName).createFlag("WALL" + x + ", " + y, COLOR_RED);
         }
     }
+    if (!avail.includes(true))
+        pos.createFlag("Blocked", COLOR_RED);
     return !avail.includes(true);
 }

@@ -1,11 +1,12 @@
-import { storeEnergy } from "storeEnergy";
+import { getEnergy } from "getEnergy";
+import { harvest } from "harvest";
+import { maintain } from "maintenance";
 import { Reason } from "Task";
 import { wander } from "wander";
-import { getEnergy } from "./getEnergy";
 
-export function harvest(creep: Creep) {
+export function build(creep: Creep) {
     const memory = creep.memory as any;
-    if (memory.harvesting) {
+    if (memory.harvesting === true) {
         const result = getEnergy(creep);
         if (result.success)
             memory.harvesting = false;
@@ -13,6 +14,12 @@ export function harvest(creep: Creep) {
             wander(creep);
         return;
     }
-    if (storeEnergy(creep).success)
+
+    const build = maintain(creep);
+
+    if (build.reason === Reason.NO_VALID_TARGET) {
+        harvest(creep);
+    } else if (build.success) {
         memory.harvesting = true;
+    }
 }

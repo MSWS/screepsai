@@ -128,8 +128,8 @@ export function getContainerScore(creep: Creep, container: AnyStructure): number
     } else if (container instanceof StructureRampart || container instanceof StructureRoad) {
         score += (container.hits / container.hitsMax) * 20;
     } else {
-        score += (container.store.getUsedCapacity(RESOURCE_ENERGY) / container.store.getCapacity(RESOURCE_ENERGY)) * 10;
-        score += (Math.max(container.store.getCapacity(RESOURCE_ENERGY) / 5000, 5) / 5) * 10;
+        score += (container.store.getUsedCapacity(RESOURCE_ENERGY) / container.store.getCapacity(RESOURCE_ENERGY)) * 18;
+        score += (Math.max(container.store.getCapacity(RESOURCE_ENERGY) / 5000, 5) / 5) * 2;
     }
     const path = PathFinder.search(creep.pos, { pos: container.pos, range: 1 });
     score += path.cost;
@@ -138,8 +138,8 @@ export function getContainerScore(creep: Creep, container: AnyStructure): number
 
 export function getConstructionScore(creep: Creep, site: ConstructionSite): number {
     let score = 0;
-    score -= (site.progress / site.progressTotal) * 50;
-    score += Math.min(site.progressTotal / 250, 50) / 50 * 20;
+    score += (1 - (site.progress / site.progressTotal)) * 10;
+    score += Math.min(site.progressTotal / 250, 50) / 50 * 10;
     const path = PathFinder.search(creep.pos, { pos: site.pos, range: 1 });
     score += path.cost;
     return score;
