@@ -24,25 +24,25 @@ module.exports.loop = function () {
         }
     }
 
-    for (const name in Game.rooms) {
-        if (knownRooms.includes(name))
-            continue;
-        const room = Game.rooms[name];
-        if (room.controller && !room.controller.my)
-            continue;
-        for (const source of link) {
-            for (const target of link) {
-                if (target === source)
-                    continue;
-                for (const s of room.find(source)) {
-                    for (const t of room.find(target)) {
-                        buildRoad(s instanceof RoomPosition ? s : s.pos, t instanceof RoomPosition ? t : t.pos);
-                    }
-                }
-            }
-        }
-        knownRooms.push(name);
-    }
+    // for (const name in Game.rooms) {
+    //     if (knownRooms.includes(name))
+    //         continue;
+    //     const room = Game.rooms[name];
+    //     if (room.controller && !room.controller.my)
+    //         continue;
+    //     for (const source of link) {
+    //         for (const target of link) {
+    //             if (target === source)
+    //                 continue;
+    //             for (const s of room.find(source)) {
+    //                 for (const t of room.find(target)) {
+    //                     buildRoad(s instanceof RoomPosition ? s : s.pos, t instanceof RoomPosition ? t : t.pos);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     knownRooms.push(name);
+    // }
 
     for (const name in Game.spawns) {
         const spawn = Game.spawns[name];
@@ -62,14 +62,17 @@ module.exports.loop = function () {
         }
 
         const creeps = spawn.room.find(FIND_MY_CREEPS);
-        creeps.sort((a, b) => getCreepScore(spawn, a) - getCreepScore(spawn, b));
-        const weakest = creeps[creeps.length - 1];
-        if (creeps.length >= spawn.room.find(FIND_SOURCES).length * 3 + 1)
+        if (creeps.length >= spawn.room.find(FIND_SOURCES).length * 3 + 1) {
+            creeps.sort((a, b) => getCreepScore(spawn, a) - getCreepScore(spawn, b));
+            const weakest = creeps[creeps.length - 1];
             if (getTheoreticalScore(body) < getCreepScore(spawn, weakest)) {
                 weakest.say("RIP");
                 (weakest.memory as any).sacrifice = spawn.id;
                 continue;
             }
+            continue;
+        }
+
         spawn.spawnCreep(body, "Minion" + Math.round(Math.random() * 10000));
     }
 

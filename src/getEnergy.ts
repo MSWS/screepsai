@@ -34,7 +34,6 @@ export function getEnergy(creep: Creep): TaskResult {
         return new TaskResult(false, Reason.INVALID_TARGET);
     if (creep.room.controller)
         buildRoad(source.pos, creep.room.controller.pos);
-
     switch (creep.harvest(source)) {
         case OK:
             if (creep.store.getFreeCapacity() === 0) {
