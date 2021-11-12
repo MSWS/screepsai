@@ -24,33 +24,13 @@ module.exports.loop = function () {
         }
     }
 
-    // for (const name in Game.rooms) {
-    //     if (knownRooms.includes(name))
-    //         continue;
-    //     const room = Game.rooms[name];
-    //     if (room.controller && !room.controller.my)
-    //         continue;
-    //     for (const source of link) {
-    //         for (const target of link) {
-    //             if (target === source)
-    //                 continue;
-    //             for (const s of room.find(source)) {
-    //                 for (const t of room.find(target)) {
-    //                     buildRoad(s instanceof RoomPosition ? s : s.pos, t instanceof RoomPosition ? t : t.pos);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     knownRooms.push(name);
-    // }
-
     for (const name in Game.spawns) {
         const spawn = Game.spawns[name];
 
         let energyAvail = spawn.room.energyAvailable;
         if (energyAvail / spawn.room.energyCapacityAvailable < .9)
             continue;
-        const addOn = [CLAIM, CARRY, WORK, MOVE, CARRY, MOVE, ATTACK];
+        const addOn = [CLAIM, WORK, CARRY, MOVE, CARRY, MOVE, ATTACK];
         const body: BodyPartConstant[] = [WORK, MOVE, CARRY];
         for (const part of body)
             energyAvail -= BODYPART_COST[part];
