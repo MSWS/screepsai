@@ -10,7 +10,7 @@ export function maintain(creep: Creep) {
     let site: AnyStructure;
 
     if (!memory.maintain) {
-        const sites = creep.room.find(FIND_STRUCTURES, { filter: t => t.structureType !== STRUCTURE_CONTROLLER && t.structureType !== STRUCTURE_WALL && t.hits !== t.hitsMax });
+        const sites = creep.room.find(FIND_STRUCTURES, { filter: t => t.structureType !== STRUCTURE_CONTROLLER && t.hits && t.hits !== t.hitsMax });
         if (!sites || sites.length === 0)
             return new TaskResult(false, Reason.NO_VALID_TARGET);
         sites.sort((a, b) => getStructureScore(creep, a) - getStructureScore(creep, b));
@@ -28,8 +28,9 @@ export function maintain(creep: Creep) {
     const result = creep.repair(site);
     switch (result) {
         case OK:
+            memory.maintain = undefined;
+
             if (site.hits >= site.hitsMax) {
-                memory.maintain = undefined;
                 return new TaskResult(true, Reason.COMPLETED);
             }
             return new TaskResult(false, Reason.IN_PROGRESS);
@@ -49,7 +50,7 @@ export function getStructureScore(creep: Creep, container: AnyStructure): number
     if (!container.hitsMax || !container.hits) {
         score += 500;
     } else {
-        score += (container.hits / container.hitsMax) * 50;
+        score += (container.hits / container.hitsMax) * 80;
     }
     const path = PathFinder.search(creep.pos, { pos: container.pos, range: 1 });
     score += path.cost;

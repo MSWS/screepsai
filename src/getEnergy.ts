@@ -83,10 +83,7 @@ export function isSourceBlocked(pos: RoomPosition): boolean {
         const y = Math.floor(i / 3) - 1 + pos.y;
         if (terrain.get(x, y) === TERRAIN_MASK_WALL) {
             avail[i] = false;
-            // new RoomPosition(x, y, pos.roomName).createFlag("WALL" + x + ", " + y, COLOR_RED);
         }
     }
-    if (!avail.includes(true))
-        pos.createFlag("Blocked", COLOR_RED);
     return !avail.includes(true);
 }
