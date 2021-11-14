@@ -20,7 +20,7 @@ export function attemptSpawn() {
 
         creeps.sort((a, b) => getCreepScore(spawn, a) - getCreepScore(spawn, b));
         const weakest = creeps[creeps.length - 1];
-        if (getTheoreticalScore(body) < getCreepScore(spawn, weakest)) {
+        if (weakest && getTheoreticalScore(body) < getCreepScore(spawn, weakest)) {
             if (creeps.length < max - 1)
                 break;
             weakest.say("RIP");
@@ -35,7 +35,7 @@ export function attemptSpawn() {
 
 export function getBestRole(creep: Creep | BodyPartConstant[]) {
     const body = valuesToMap(creep instanceof Creep ? bodyToList(creep) : creep);
-    if (body.get(WORK) ?? 0 >= 1)
+    if (body.get(CLAIM) ?? 0 >= 1)
         return "claimer";
     // if (body.get(ATTACK) ?? false)
     // return "fighter";

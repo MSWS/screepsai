@@ -5,8 +5,6 @@ export function takeoverRoom(creep: Creep, controller: StructureController): Tas
         return new TaskResult(controller.my, Reason.NO_ENERGY);
     if (controller.my) {
         const result = creep.upgradeController(controller);
-        console.log("result: " + result);
-
         switch (result) {
             case OK:
                 return new TaskResult(creep.store.getUsedCapacity() === 0, creep.store.getUsedCapacity() === 0 ? Reason.COMPLETED : Reason.IN_PROGRESS);

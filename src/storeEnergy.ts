@@ -92,7 +92,7 @@ export function findBestStore(creep: Creep): AnyStructure | RoomPosition | Const
     for (const site of sites)
         possible.push(site);
     possible.sort((a, b) => sort(creep, a, b));
-    // console.log(possible.join(", "));
+    console.log(possible.join(", "));
     return possible[0];
 }
 
