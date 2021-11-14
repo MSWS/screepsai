@@ -50,10 +50,10 @@ export function getStructureScore(creep: Creep, container: AnyStructure): number
     if (!container.hitsMax || !container.hits) {
         score += 500;
     } else {
-        score += (container.hits / container.hitsMax) * 80;
+        score += (container.hits / container.hitsMax) * 500;
+        score -= (container.hitsMax - container.hits) / 500;
     }
     const path = PathFinder.search(creep.pos, { pos: container.pos, range: 1 });
     score += path.cost;
-
     return score;
 }

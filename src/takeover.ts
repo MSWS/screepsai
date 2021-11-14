@@ -2,9 +2,12 @@ import { Reason, TaskResult } from "Task";
 
 export function takeoverRoom(creep: Creep, controller: StructureController): TaskResult {
     if (creep.store.getUsedCapacity() === 0)
-        return new TaskResult(controller.my, controller.my ? Reason.COMPLETED : Reason.NO_ENERGY);
+        return new TaskResult(controller.my, Reason.NO_ENERGY);
     if (controller.my) {
-        switch (creep.upgradeController(controller)) {
+        const result = creep.upgradeController(controller);
+        console.log("result: " + result);
+
+        switch (result) {
             case OK:
                 return new TaskResult(creep.store.getUsedCapacity() === 0, creep.store.getUsedCapacity() === 0 ? Reason.COMPLETED : Reason.IN_PROGRESS);
             case ERR_NOT_OWNER:
